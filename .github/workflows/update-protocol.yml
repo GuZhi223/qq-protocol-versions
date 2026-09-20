@@ -1,0 +1,50 @@
+name: Update QQ protocol data
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-qq-protocol
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+
+      - name: Set up .NET 6
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Discover, verify and extract
+        shell: pwsh
+        run: ./scripts/update-protocol.ps1
+
+      - name: Commit new protocol data
+        shell: pwsh
+        run: |
+          git add android_phone android_pad sources
+          if (git diff --cached --quiet) {
+            Write-Host "No new QQ version was discovered."
+            exit 0
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          $version = (Get-ChildItem sources -Filter *.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1).BaseName
+          git commit -m "Update QQ protocol data for $version"
+          git push

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "discovered_at": "2026-09-16T01:31:07.0395505Z",
+  "discovery": {
+    "provider": "Existing locally verified QQ APK",
+    "endpoint": null
+  },
+  "apk": {
+    "package_name": "com.tencent.mobileqq",
+    "version_name": "9.3.35",
+    "version_code": 15560,
+    "url": null,
+    "size_byte": 414889080,
+    "sha256": "cf869625cb9be2df562977e6a7d028d80542d31b9d58ea68a24dc43047d1d871",
+    "sha1": "8b8567da37789785d45ceaabfd521977cb875143",
+    "md5": "f8491b2e9c467ac630f3281117154ec3",
+    "signer_certificate_sha256": "ea6e97ad6c34f7039a9c6daba732c97d0e098e83ede2b4d52c76eb0184ac7a38"
+  },
+  "extractor": {
+    "name": "MrXiaoM/Eden",
+    "version": "1.0.8",
+    "release_url": "https://github.com/MrXiaoM/Eden/releases/download/1.0.8/Eden-1.0.8.zip",
+    "release_sha256": "88a6851a07464db99ce725178e6802b1eb2dbb9acfd0c58ae1c8d8a891b47160"
+  },
+  "outputs": {
+    "android_phone_sha256": "71138d7b5485bd7d0568d55735b09e5c9405e4ac31e05b4484f193b9bd1e255b",
+    "android_pad_sha256": "532272a905fffad1f7e3ac8953cdf608e976e68e545de743b7fcbaddc0af8ba1"
+  }
+}
