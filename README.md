@@ -1,63 +1,56 @@
-# QQ Protocol Versions
+# QQ 协议版本数据
 
-Automatically discovers the latest official Android QQ package from Tencent's
-App Store metadata endpoint, verifies the APK, extracts protocol data with
-[MrXiaoM/Eden](https://github.com/MrXiaoM/Eden), and commits the generated JSON.
+自动从腾讯应用宝元数据接口发现最新的 Android QQ 官方安装包，校验 APK，
+用 [MrXiaoM/Eden](https://github.com/MrXiaoM/Eden) 提取协议数据，并提交生成的 JSON。
 
-## Data layout
+## 数据布局
 
-- `android_phone/<version>.json`
-- `android_pad/<version>.json`
-- `sources/<version>.json` — discovery URL, APK hashes, signature and Eden version
+- `android_phone/<版本>.json`
+- `android_pad/<版本>.json`
+- `sources/<版本>.json` — 发现地址、APK 哈希、签名信息与 Eden 版本
 
-The QQ APK is downloaded only into the temporary runner workspace. It is never
-committed or published by this repository.
+QQ APK 只会被下载到 runner 的临时工作区，本仓库从不提交、也从不发布它。
 
-A `sources` record carries one of two origins in `discovery.provider`:
+`sources` 记录中 `discovery.provider` 有两种取值：
 
-- `Tencent App Store metadata` — written by `scripts/update-protocol.ps1`, with
-  `discovered_at` and `apk.url` filled from the discovery response.
-- `Existing locally verified QQ APK` — written when a version was extracted from
-  an APK obtained out of band. `apk.url` is `null` and `discovered_at` records
-  when the APK was acquired.
+- `Tencent App Store metadata` — 由 `scripts/update-protocol.ps1` 写入，
+  `discovered_at` 与 `apk.url` 取自发现接口的返回。
+- `Existing locally verified QQ APK` — 当某个版本来自另行取得的 APK 时写入。
+  `apk.url` 为 `null`，`discovered_at` 记录该 APK 的取得时间。
 
-Both variants share the same key set, so downstream consumers can read either
-without branching.
+两种取值的字段集完全一致，下游读取时无需分支处理。
 
-## Automation
+## 自动化
 
-The GitHub Actions workflow runs every day and can also be started manually.
-It performs these checks before running Eden:
+GitHub Actions 工作流每天运行一次，也可以手动触发。它在调用 Eden 之前会依次校验：
 
-1. Tencent metadata identifies the package as official `com.tencent.mobileqq`.
-2. Downloaded size and SHA-256 match Tencent's metadata.
-3. Android manifest package/version match the discovered release.
-4. The signing certificate SHA-256 matches Tencent's metadata.
-5. Eden outputs valid Phone (`protocol_type = 1`) and Pad (`protocol_type = 6`) JSON.
+1. 腾讯元数据确认该包是官方 `com.tencent.mobileqq`。
+2. 下载得到的体积与 SHA-256 与腾讯元数据一致。
+3. Android 清单中的包名与版本号与发现的版本一致。
+4. 签名证书 SHA-256 与腾讯元数据一致。
+5. Eden 产出合法的 Phone（`protocol_type = 1`）与 Pad（`protocol_type = 6`）JSON。
 
-Each check aborts the run, so nothing is committed unless all five pass.
+任何一项不通过都会中止运行，因此只有五项全部通过才会产生提交。
 
-## Requirements
+## 运行环境
 
 - PowerShell
 - Java 8
-- .NET 6 or newer runtime
-- Android SDK Build Tools (provides `aapt` and `apksigner`)
+- .NET 6 或更高运行时
+- Android SDK Build Tools（提供 `aapt` 与 `apksigner`）
 
-`aapt` and `apksigner` are resolved from `PATH` first, then from
-`$env:ANDROID_HOME`, `$env:ANDROID_SDK_ROOT`, `$env:LOCALAPPDATA\Android\Sdk`,
-or `$env:ProgramFiles\Android\android-sdk`. Within an SDK root the newest
-`build-tools` directory wins, compared numerically.
+`aapt` 与 `apksigner` 先查 `PATH`，再依次查 `$env:ANDROID_HOME`、
+`$env:ANDROID_SDK_ROOT`、`$env:LOCALAPPDATA\Android\Sdk`、
+`$env:ProgramFiles\Android\android-sdk`。在一个 SDK 根目录内取版本号最大的
+`build-tools` 目录，按数值比较而不是按字典序。
 
-To run locally on Windows:
+在 Windows 上本地运行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 ```
 
-## Licensing and attribution
+## 许可与归属
 
-See [NOTICE.md](NOTICE.md) for the provenance of the published data, Eden's
-AGPL-3.0 terms, the components bundled inside Eden, and the caveat about
-republishing these constants.
-
+数据来源、Eden 的 AGPL-3.0 条款、Eden 内部打包的组件，以及转载这些常量的注意事项，
+见 [NOTICE.md](NOTICE.md)。
