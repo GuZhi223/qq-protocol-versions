@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "discovered_at": "2026-09-24T08:37:49.8705166Z",
+  "discovery": {
+    "provider": "Tencent App Store metadata",
+    "endpoint": "https://upage.html5.qq.com/wechat-apkinfo"
+  },
+  "apk": {
+    "package_name": "com.tencent.mobileqq",
+    "version_name": "9.3.70",
+    "version_code": 16410,
+    "url": "https://imtt.dd.qq.com/sjy.40002/sjy.00004/16891/apk/ED3B06E91E21F260FC6C9329DDEAD44A.apk?fsname=com.tencent.mobileqq_9.3.70.apk",
+    "size_byte": 394238266,
+    "sha256": "8dad38c1ef28f837893569fbc5995e7f73f5b4e568f7da75f67dbb077cb93b3f",
+    "sha1": "6512c9de8cca5ca695650ef5e2eb5b477360aff2",
+    "md5": "ed3b06e91e21f260fc6c9329ddead44a",
+    "signer_certificate_sha256": "ea6e97ad6c34f7039a9c6daba732c97d0e098e83ede2b4d52c76eb0184ac7a38"
+  },
+  "extractor": {
+    "name": "MrXiaoM/Eden",
+    "version": "1.0.8",
+    "release_url": "https://github.com/MrXiaoM/Eden/releases/download/1.0.8/Eden-1.0.8.zip",
+    "release_sha256": "88a6851a07464db99ce725178e6802b1eb2dbb9acfd0c58ae1c8d8a891b47160"
+  },
+  "outputs": {
+    "android_phone_sha256": "71e9f91ed0159efc08449a27445a9e319f4d311c0375f5df99ff2a3321f335bf",
+    "android_pad_sha256": "4e1fb955894efa3f0653b9e2ba8acf9523f8ad6dd7d09db4a3f381f4b25a8463"
+  }
+}
