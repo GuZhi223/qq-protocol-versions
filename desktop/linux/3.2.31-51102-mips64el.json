@@ -1,0 +1,19 @@
+{
+  "platform": "linux",
+  "architectures": [
+    "mips"
+  ],
+  "version": "3.2.31-51102",
+  "subid": 537376500,
+  "qua": "V1_LNX_NQ_3.2.31_51102_GW_B",
+  "qqappid_occurrences": 3,
+  "qua_occurrences": 1,
+  "major_sha256": "8b65c4194b5a16e497f8b2c7af68901e18018b5726c93bac7c76f4f78a43c93d",
+  "source_sha256": "a74a998bc633bfbd527793a07b5f84194fd6e1a587f5950595c4a25b1c945423",
+  "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.31_260710_mips64el_01.deb",
+  "architecture": "mips64el",
+  "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+  "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.33/release/3f89efc5/QQ_3.2.32_260812_mips64el_01.deb",
+  "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.31_260710_mips64el_01.deb",
+  "download_source": "mirror"
+}

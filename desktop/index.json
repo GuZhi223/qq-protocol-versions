@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "platform": "linux",
+      "architectures": [
+        "mips"
+      ],
+      "version": "3.2.31-51102",
+      "subid": 537376500,
+      "qua": "V1_LNX_NQ_3.2.31_51102_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "8b65c4194b5a16e497f8b2c7af68901e18018b5726c93bac7c76f4f78a43c93d",
+      "source_sha256": "a74a998bc633bfbd527793a07b5f84194fd6e1a587f5950595c4a25b1c945423",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.31_260710_mips64el_01.deb",
+      "architecture": "mips64el",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.33/release/3f89efc5/QQ_3.2.32_260812_mips64el_01.deb",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.31_260710_mips64el_01.deb",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "linux",
+      "architectures": [
+        "arm64"
+      ],
+      "version": "3.2.32-52194",
+      "subid": 537379448,
+      "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "de98700071d18747ea4fedc039278c7d258e7477302b084a7ffbc1cb55210db1",
+      "source_sha256": "8796ccfd66acc025ef18db37185532d40bc8c58921e17da6d28c295acbcf8f92",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_arm64_01.deb",
+      "architecture": "arm64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_arm64_01.deb",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_arm64_01.deb",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "linux",
+      "architectures": [
+        "loongarch64"
+      ],
+      "version": "3.2.32-52194",
+      "subid": 537379449,
+      "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "69a9c01bf70d6ae07a3d81ea97ee0df12fec7447473b16a0c2cd080048d9216f",
+      "source_sha256": "400553f6d646da4e523b22ba652334f08f74b377c465392dda65c2e6c9f908fd",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_loongarch64_01.deb",
+      "architecture": "loongarch64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_loongarch64_01.deb",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_loongarch64_01.deb",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "linux",
+      "architectures": [
+        "x64"
+      ],
+      "version": "3.2.32-52194",
+      "subid": 537379447,
+      "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "2ca93b497e18d92e6f9fcf3a76f5ac1891309272d5e9a0fe11fbf8598deddfab",
+      "source_sha256": "d085dd89397225061eb9f194308f688129818ed445777e97a4a0a16e13d7b0e8",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_amd64_01.deb",
+      "architecture": "x64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_amd64_01.deb",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_amd64_01.deb",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "windows",
+      "architectures": [
+        "arm64"
+      ],
+      "version": "9.9.33-52230",
+      "subid": 537379423,
+      "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "f8e406b2464bce4a74b6c74a782f15d1d3c76a52daacc89935cd3cd8ef2fdfdc",
+      "source_sha256": "ee77d6d8bdfc4f4c9bf9c6d2521322ff410d2614a7e8ba005aaa9703fc9ef174",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_arm64_01.exe",
+      "architecture": "arm64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_arm64_01.exe",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_arm64_01.exe",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "windows",
+      "architectures": [
+        "x64"
+      ],
+      "version": "9.9.33-52230",
+      "subid": 537379411,
+      "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "3fdc17fa0512fd4b702f34a0025ffe4eca0a5c70229872f7fc0a0324bdfb5fdf",
+      "source_sha256": "b25c0d3ce9df764074a9118d0ded927e1b2d7ebf60e306112e8df18a040ec492",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x64_01.exe",
+      "architecture": "x64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_x64_01.exe",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x64_01.exe",
+      "download_source": "mirror"
+    },
+    {
+      "platform": "windows",
+      "architectures": [
+        "x86"
+      ],
+      "version": "9.9.33-52230",
+      "subid": 537379410,
+      "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "70e1cdf2e071fd3e656f42784b48de56d85e6b2d8c7253eca6257932cff315ac",
+      "source_sha256": "fd7214c7a70a6e0eb46781e0d653d5c56b0d496d2f710b4d5c07939c40b73be6",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x86_01.exe",
+      "architecture": "x86",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_x86_01.exe",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x86_01.exe",
+      "download_source": "mirror"
+    }
+  ]
+}
