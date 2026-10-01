@@ -1,10 +1,10 @@
 """Read QQNT version, QUA, and SubID from QQNT desktop packages.
 
 Usage:
-    python work/extract-qqnt-subid.py <QQNT version directory>
-    python work/extract-qqnt-subid.py <linuxqq.deb>
-    python work/extract-qqnt-subid.py <QQ installer.exe>
-    python work/extract-qqnt-subid.py <QQ.dmg>
+    python scripts/extract-qqnt-subid.py <QQNT version directory>
+    python scripts/extract-qqnt-subid.py <linuxqq.deb>
+    python scripts/extract-qqnt-subid.py <QQ installer.exe>
+    python scripts/extract-qqnt-subid.py <QQ.dmg>
 
 EXE and DMG require 7-Zip on PATH. The extractor reads package.json and
 major.node without running QQ or installing the package.
@@ -24,7 +24,8 @@ import tempfile
 from pathlib import Path
 
 
-APP_ID_PATTERN = re.compile(rb"QQAppId/(\d{6,12})")
+APP_ID_PATTERN = re.compile(rb"QQAppId/(\d{6,12})(?:\x00|[^0-9])")
+LEGACY_APP_ID_MARKER = bytes.fromhex("A4 09 00 00 00 35")
 QUA_PATTERN = re.compile(rb"V1_(WIN|LNX|MAC)_NQ_([0-9.]+)_([0-9]+)_GW_B")
 VERSION_PATTERN = re.compile(r"^(\d+\.\d+\.\d+)-(\d+)$")
 PLATFORMS = {"WIN": "windows", "LNX": "linux", "MAC": "macos"}
@@ -186,6 +187,35 @@ def detect_architectures(major):
     return sorted(set(architectures))
 
 
+def extract_app_ids(major):
+    """Extract QQAppId values using NapCat's current and legacy markers.
+
+    Newer QQNT builds contain a NUL-terminated ``QQAppId/<digits>`` string.
+    Older builds used a binary marker whose payload starts at the final
+    ``0x35`` byte.  We keep all occurrences so the caller can reject a
+    package that contains conflicting identifiers.
+    """
+    app_ids = [int(match.group(1)) for match in APP_ID_PATTERN.finditer(major)]
+    if app_ids:
+        return app_ids, "QQAppId/"
+
+    legacy_ids = []
+    search_position = 0
+    while True:
+        index = major.find(LEGACY_APP_ID_MARKER, search_position)
+        if index < 0:
+            break
+        start = index + len(LEGACY_APP_ID_MARKER) - 1
+        end = major.find(b"\x00", start)
+        if end < 0:
+            break
+        payload = major[start:end]
+        if payload.isdigit() and 6 <= len(payload) <= 12:
+            legacy_ids.append(int(payload))
+        search_position = end + 1
+    return legacy_ids, "legacy-marker"
+
+
 def extract(path, source_url=None):
     if path.is_dir():
         package_bytes, major = read_directory(path)
@@ -205,7 +235,7 @@ def extract(path, source_url=None):
     if not match:
         raise ValueError(f"unexpected package version: {version!r}")
 
-    app_ids = [int(m.group(1)) for m in APP_ID_PATTERN.finditer(major)]
+    app_ids, app_id_source = extract_app_ids(major)
     quas = [m for m in QUA_PATTERN.finditer(major)]
     unique_ids = set(app_ids)
     unique_quas = {m.group(0) for m in quas}
@@ -220,6 +250,7 @@ def extract(path, source_url=None):
         "architectures": detect_architectures(major),
         "version": version,
         "subid": app_ids[0],
+        "subid_source": app_id_source,
         "qua": qua.group(0).decode(),
         "qqappid_occurrences": len(app_ids),
         "qua_occurrences": len(quas),

@@ -17,6 +17,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -41,6 +42,10 @@ DEFAULT_CONFIG_URL = (
 DEFAULT_HOME_URL = "https://im.qq.com/index/"
 MIRROR_API_URL = (
     "https://api.github.com/repos/Rodert/qq-versions/releases"
+    "?per_page=20"
+)
+NAPCAT_RELEASES_API_URL = (
+    "https://api.github.com/repos/NapNeko/NapCatQQ/releases"
     "?per_page=20"
 )
 USER_AGENT = "qq-protocol-versions-desktop-updater/1.0"
@@ -177,6 +182,88 @@ def find_mirror_asset(
     return None
 
 
+def parse_napcat_download_links(body: str) -> list[dict[str, str]]:
+    """Parse QQ installer links published in a NapCat Release body."""
+    if not body:
+        return []
+
+    links: list[dict[str, str]] = []
+    markdown = re.compile(r"\*{0,2}\[([^\]]+)\]\((https?://[^)]+)\)\*{0,2}")
+    for match in markdown.finditer(body):
+        label = match.group(1).strip()
+        url = match.group(2).strip()
+        parsed = urllib.parse.urlsplit(url)
+        host = (parsed.hostname or "").lower()
+        path = urllib.parse.unquote(parsed.path).lower()
+        if not (host.endswith(".qq.com") or host.endswith(".gtimg.cn")):
+            continue
+        if path.endswith((".exe", ".deb", ".dmg")):
+            links.append({"label": label, "url": url, "path": path})
+    return links
+
+
+def _napcat_architecture(label: str, path: str) -> str:
+    text = f"{label} {path}".lower()
+    if "loongarch64" in text:
+        return "loongarch64"
+    if "mips64el" in text:
+        return "mips64el"
+    if "arm64" in text or "aarch64" in text:
+        return "arm64"
+    if "amd64" in text or "x86_64" in text or "x64" in text:
+        return "x64"
+    if "x86" in text or "i386" in text or "win32" in text:
+        return "x86"
+    return "universal"
+
+
+def _napcat_platform(label: str, path: str) -> str:
+    text = f"{label} {path}".lower()
+    if path.endswith(".exe") and ("win" in text or "windows" in text):
+        return "windows"
+    if path.endswith(".deb") and "linux" in text:
+        return "linux"
+    if path.endswith(".dmg") and ("mac" in text or "osx" in text):
+        return "macos"
+    return ""
+
+
+def find_napcat_asset(
+    platform: str, architecture: str
+) -> tuple[str, str, str, str] | None:
+    """Find a QQ package URL from the newest NapCat Release bodies.
+
+    NapCat publishes the QQ URLs as Markdown links instead of a structured
+    API.  We only accept Tencent-hosted installer links and require an exact
+    platform/architecture match, so a Windows x64 package cannot accidentally
+    satisfy an arm64 or Linux target.
+    """
+    try:
+        releases = json.loads(
+            request_bytes(NAPCAT_RELEASES_API_URL).decode("utf-8")
+        )
+    except Exception as error:
+        print(f"NapCat release metadata unavailable: {error}", file=sys.stderr)
+        return None
+
+    for release in releases:
+        body = str(release.get("body") or "")
+        release_tag = str(release.get("tag_name") or "")
+        release_url = str(release.get("html_url") or "")
+        for link in parse_napcat_download_links(body):
+            link_platform = _napcat_platform(link["label"], link["path"])
+            link_architecture = _napcat_architecture(link["label"], link["path"])
+            if link_platform != platform:
+                continue
+            if platform == "macos":
+                if architecture != "universal":
+                    continue
+            elif link_architecture != architecture:
+                continue
+            return link["url"], link["label"], release_tag, release_url
+    return None
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -273,46 +360,96 @@ def main() -> int:
         for platform, architecture, suffix, url in targets:
             package = temporary_dir / f"{platform}-{architecture}{suffix}"
             print(f"[{platform}/{architecture}] downloading {url}", flush=True)
-            try:
-                download_resumable(url, package)
-                download_url = url
-                download_source = "official"
-                mirror_digest = ""
-            except Exception as error:
-                print(
-                    f"[{platform}/{architecture}] official download failed: {error}",
-                    file=sys.stderr,
-                )
+            attempts: list[tuple[str, str, str, dict[str, str]]] = [
+                ("official", url, "", {})
+            ]
+            result = None
+            selected_source = ""
+            selected_url = ""
+            selected_metadata: dict[str, str] = {}
+            errors: list[str] = []
+
+            napcat_added = False
+            mirror_added = False
+            for source, candidate_url, expected_digest, metadata in attempts:
                 package.unlink(missing_ok=True)
-                mirror = find_mirror_asset(platform, architecture, suffix)
-                if mirror is None:
-                    failures.append(f"{platform}/{architecture}: {error}")
-                    continue
-                download_url, mirror_name, mirror_digest = mirror
-                download_source = "mirror"
-                print(
-                    f"[{platform}/{architecture}] falling back to mirror asset "
-                    f"{mirror_name}",
-                    flush=True,
-                )
                 try:
-                    download_resumable(download_url, package)
-                    actual_digest = sha256_file(package)
-                    if actual_digest.lower() != mirror_digest.lower():
-                        raise RuntimeError(
-                            f"mirror SHA-256 mismatch: expected {mirror_digest}, "
-                            f"got {actual_digest}"
+                    if source == "official":
+                        print(
+                            f"[{platform}/{architecture}] trying official package",
+                            flush=True,
                         )
-                except Exception as mirror_error:
-                    failures.append(f"{platform}/{architecture}: {mirror_error}")
-                    continue
+                    else:
+                        print(
+                            f"[{platform}/{architecture}] trying {source} package "
+                            f"{candidate_url}",
+                            flush=True,
+                        )
+                    download_resumable(candidate_url, package)
+                    if expected_digest:
+                        actual_digest = sha256_file(package)
+                        if actual_digest.lower() != expected_digest.lower():
+                            raise RuntimeError(
+                                f"SHA-256 mismatch: expected {expected_digest}, "
+                                f"got {actual_digest}"
+                            )
+                    result = extract(package, source_url=candidate_url)
+                    selected_source = source
+                    selected_url = candidate_url
+                    selected_metadata = metadata
+                    break
+                except Exception as error:
+                    errors.append(f"{source}: {error}")
+                    print(
+                        f"[{platform}/{architecture}] {source} failed: {error}",
+                        file=sys.stderr,
+                    )
+                    if source == "official" and not napcat_added:
+                        napcat_added = True
+                        napcat = find_napcat_asset(platform, architecture)
+                        if napcat is not None:
+                            napcat_url, label, tag, release_url = napcat
+                            attempts.append(
+                                (
+                                    "napcat-release",
+                                    napcat_url,
+                                    "",
+                                    {
+                                        "release_label": label,
+                                        "release_tag": tag,
+                                        "release_url": release_url,
+                                    },
+                                )
+                            )
+                    if source != "mirror" and not mirror_added:
+                        mirror_added = True
+                        mirror = find_mirror_asset(platform, architecture, suffix)
+                        if mirror is not None:
+                            mirror_url, mirror_name, mirror_digest = mirror
+                            attempts.append(
+                                (
+                                    "mirror",
+                                    mirror_url,
+                                    mirror_digest,
+                                    {"asset_name": mirror_name},
+                                )
+                            )
+
+            if result is None:
+                failures.append(
+                    f"{platform}/{architecture}: " + "；".join(errors[-4:])
+                )
+                continue
+
             try:
-                result = extract(package, source_url=download_url)
                 result["architecture"] = architecture
                 result["config_url"] = resolved_config_url
                 result["official_url"] = url
-                result["download_url"] = download_url
-                result["download_source"] = download_source
+                result["download_url"] = selected_url
+                result["download_source"] = selected_source
+                for key in ("release_label", "release_tag", "release_url", "asset_name"):
+                    if selected_metadata.get(key):
+                        result[f"source_{key}"] = selected_metadata[key]
                 result["source_sha256"] = sha256_file(package)
                 output = (
                     args.output_dir

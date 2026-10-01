@@ -57,9 +57,17 @@ powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 [PC 配置](https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json)
 读取 Windows、Linux 和 macOS 下载地址，在临时目录解包，只保留 JSON 结果；Windows
 安装器和 macOS DMG 使用 7-Zip，Linux DEB 使用 Python 标准库解析。若腾讯 CDN 对 runner
-返回 403，脚本会回退到带 SHA-256 校验的 [Rodert/qq-versions 镜像](https://github.com/Rodert/qq-versions)，并在结果中保留官方地址、实际下载地址和下载来源。桌面端结果的
-唯一键包含平台、架构和完整构建版本，因为 Linux x64 与 arm64 可能共享版本号但使用不同
-SubID。
+返回 403 或包内容无法解包，脚本会依次尝试 [NapCatQQ Release](https://github.com/NapNeko/NapCatQQ/releases)
+中的腾讯安装包链接，再回退到带 SHA-256 校验的
+[Rodert/qq-versions 镜像](https://github.com/Rodert/qq-versions)。NapCat Release
+中的链接只接受腾讯域名，并且必须精确匹配平台和架构。结果会保留官方地址、实际下载地址、
+下载来源以及 NapCat Release 标签，便于追溯。
+
+`major.node` 中的 SubID 提取兼容 NapCat 的两种格式：新版的
+`QQAppId/<数字>\0` 标记，以及旧版的
+`A4 09 00 00 00 35` 二进制标记。脚本仍会校验 `package.json`、QUA、架构和重复候选值；
+发现冲突时不会提交该条目。桌面端结果的唯一键包含平台、架构和完整构建版本，因为 Linux
+x64 与 arm64 可能共享版本号但使用不同 SubID。
 
 工作流把 GitHub Actions 自带的 `GITHUB_TOKEN` 传给桌面端脚本，用于读取镜像发布元数据，
 避免匿名 GitHub API 的低频率限制。本地运行时不需要令牌；如果遇到 GitHub API 限流，
