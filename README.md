@@ -8,6 +8,9 @@
 - `android_phone/<版本>.json`
 - `android_pad/<版本>.json`
 - `sources/<版本>.json` — 发现地址、APK 哈希、签名信息与 Eden 版本
+- `desktop/<平台>/<版本>-<架构>.json` — QQNT Windows/Linux/macOS 包中
+  `resources/app/package.json` 与 `major.node` 提取出的版本、架构、SubID 和 QUA
+- `desktop/index.json` — 当前仓库中全部桌面端条目的索引
 
 QQ APK 只会被下载到 runner 的临时工作区，本仓库从不提交、也从不发布它。
 
@@ -49,6 +52,13 @@ GitHub Actions 工作流每天运行一次，也可以手动触发。它在调�
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 ```
+
+桌面端由同一个工作流自动更新。工作流从腾讯
+[PC 配置](https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json)
+读取 Windows、Linux 和 macOS 下载地址，在临时目录解包，只保留 JSON 结果；Windows
+安装器和 macOS DMG 使用 7-Zip，Linux DEB 使用 Python 标准库解析。桌面端结果的
+唯一键包含平台、架构和完整构建版本，因为 Linux x64 与 arm64 可能共享版本号但使用不同
+SubID。
 
 ## 许可与归属
 
