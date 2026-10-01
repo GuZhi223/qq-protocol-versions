@@ -61,6 +61,10 @@ powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 唯一键包含平台、架构和完整构建版本，因为 Linux x64 与 arm64 可能共享版本号但使用不同
 SubID。
 
+工作流把 GitHub Actions 自带的 `GITHUB_TOKEN` 传给桌面端脚本，用于读取镜像发布元数据，
+避免匿名 GitHub API 的低频率限制。本地运行时不需要令牌；如果遇到 GitHub API 限流，
+可以设置 `GITHUB_TOKEN` 或 `GH_TOKEN` 后再运行脚本。
+
 ## 许可与归属
 
 数据来源、Eden 的 AGPL-3.0 条款、Eden 内部打包的组件，以及转载这些常量的注意事项，
