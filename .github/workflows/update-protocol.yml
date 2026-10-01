@@ -52,6 +52,8 @@ jobs:
       - name: Discover and extract QQNT desktop packages
         shell: pwsh
         run: python scripts/update-qqnt-desktop.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit new protocol data
         shell: pwsh

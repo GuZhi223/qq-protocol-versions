@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import shutil
 import sys
@@ -46,13 +47,24 @@ USER_AGENT = "qq-protocol-versions-desktop-updater/1.0"
 
 
 def request_bytes(url: str, timeout: int = 60) -> bytes:
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json,text/html,*/*",
+        "Referer": DEFAULT_HOME_URL,
+    }
+    # GitHub Actions exposes a repository token to the workflow.  Using it
+    # for the public mirror API avoids the low anonymous rate limit while
+    # keeping ordinary local runs dependency-free.
+    if url.lower().startswith("https://api.github.com/"):
+        token = (
+            os.environ.get("GITHUB_TOKEN")
+            or os.environ.get("GH_TOKEN")
+        )
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "application/json,text/html,*/*",
-            "Referer": DEFAULT_HOME_URL,
-        },
+        headers=headers,
     )
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return response.read()
