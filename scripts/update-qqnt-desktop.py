@@ -38,6 +38,10 @@ DEFAULT_CONFIG_URL = (
     "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json"
 )
 DEFAULT_HOME_URL = "https://im.qq.com/index/"
+MIRROR_API_URL = (
+    "https://api.github.com/repos/Rodert/qq-versions/releases"
+    "?per_page=20"
+)
 USER_AGENT = "qq-protocol-versions-desktop-updater/1.0"
 
 
@@ -123,6 +127,44 @@ def target_packages(config: dict) -> list[tuple[str, str, str, str]]:
     return targets
 
 
+def find_mirror_asset(
+    platform: str, architecture: str, suffix: str
+) -> tuple[str, str, str] | None:
+    """Find the newest verified package in the public QQNT mirror."""
+    try:
+        releases = json.loads(request_bytes(MIRROR_API_URL).decode("utf-8"))
+    except Exception as error:
+        print(f"mirror metadata unavailable: {error}", file=sys.stderr)
+        return None
+    for release in releases:
+        for asset in release.get("assets") or []:
+            name = str(asset.get("name") or "")
+            lower = name.lower()
+            if suffix == ".exe":
+                compatible = (
+                    platform == "windows"
+                    and re.match(
+                        r"^qq_.*_(x64|x86|arm64)_01\.exe$", lower
+                    )
+                    and f"_{architecture}_".lower() in lower
+                )
+            elif suffix == ".deb":
+                arch_token = {
+                    "x64": "_amd64_",
+                    "arm64": "_arm64_",
+                    "loongarch64": "_loongarch64_",
+                    "mips64el": "_mips64el_",
+                }.get(architecture, "")
+                compatible = platform == "linux" and lower.endswith(".deb") and arch_token in lower
+            else:
+                compatible = platform == "macos" and lower.startswith("qq_") and lower.endswith(".dmg")
+            digest = str(asset.get("digest") or "")
+            url = str(asset.get("browser_download_url") or "")
+            if compatible and url and digest.startswith("sha256:"):
+                return url, name, digest.removeprefix("sha256:")
+    return None
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -198,6 +240,11 @@ def main() -> int:
         dest="platforms",
         help="limit the run; may be specified more than once",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="fail when any configured package cannot be downloaded or extracted",
+    )
     args = parser.parse_args()
 
     config, resolved_config_url = load_config(args.config_url)
@@ -208,6 +255,7 @@ def main() -> int:
         raise RuntimeError("筛选后没有可处理的平台")
 
     failures: list[str] = []
+    successes = 0
     with tempfile.TemporaryDirectory(prefix="qqnt-desktop-") as temporary:
         temporary_dir = Path(temporary)
         for platform, architecture, suffix, url in targets:
@@ -215,9 +263,44 @@ def main() -> int:
             print(f"[{platform}/{architecture}] downloading {url}", flush=True)
             try:
                 download_resumable(url, package)
-                result = extract(package, source_url=url)
+                download_url = url
+                download_source = "official"
+                mirror_digest = ""
+            except Exception as error:
+                print(
+                    f"[{platform}/{architecture}] official download failed: {error}",
+                    file=sys.stderr,
+                )
+                package.unlink(missing_ok=True)
+                mirror = find_mirror_asset(platform, architecture, suffix)
+                if mirror is None:
+                    failures.append(f"{platform}/{architecture}: {error}")
+                    continue
+                download_url, mirror_name, mirror_digest = mirror
+                download_source = "mirror"
+                print(
+                    f"[{platform}/{architecture}] falling back to mirror asset "
+                    f"{mirror_name}",
+                    flush=True,
+                )
+                try:
+                    download_resumable(download_url, package)
+                    actual_digest = sha256_file(package)
+                    if actual_digest.lower() != mirror_digest.lower():
+                        raise RuntimeError(
+                            f"mirror SHA-256 mismatch: expected {mirror_digest}, "
+                            f"got {actual_digest}"
+                        )
+                except Exception as mirror_error:
+                    failures.append(f"{platform}/{architecture}: {mirror_error}")
+                    continue
+            try:
+                result = extract(package, source_url=download_url)
                 result["architecture"] = architecture
                 result["config_url"] = resolved_config_url
+                result["official_url"] = url
+                result["download_url"] = download_url
+                result["download_source"] = download_source
                 result["source_sha256"] = sha256_file(package)
                 output = (
                     args.output_dir
@@ -230,13 +313,20 @@ def main() -> int:
                     f"{result['subid']}",
                     flush=True,
                 )
+                successes += 1
             except Exception as error:
                 failures.append(f"{platform}/{architecture}: {error}")
                 print(f"[{platform}/{architecture}] FAILED: {error}", file=sys.stderr)
 
     if failures:
-        raise RuntimeError("桌面端更新未完成：" + "；".join(failures))
-    rebuild_index(args.output_dir)
+        message = "；".join(failures)
+        if args.strict:
+            raise RuntimeError("桌面端更新未完成：" + message)
+        print("desktop warnings: " + message, file=sys.stderr)
+    if successes:
+        rebuild_index(args.output_dir)
+    elif args.strict:
+        raise RuntimeError("没有成功提取任何桌面端安装包")
     return 0
 
 

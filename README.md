@@ -56,7 +56,8 @@ powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 桌面端由同一个工作流自动更新。工作流从腾讯
 [PC 配置](https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json)
 读取 Windows、Linux 和 macOS 下载地址，在临时目录解包，只保留 JSON 结果；Windows
-安装器和 macOS DMG 使用 7-Zip，Linux DEB 使用 Python 标准库解析。桌面端结果的
+安装器和 macOS DMG 使用 7-Zip，Linux DEB 使用 Python 标准库解析。若腾讯 CDN 对 runner
+返回 403，脚本会回退到带 SHA-256 校验的 [Rodert/qq-versions 镜像](https://github.com/Rodert/qq-versions)，并在结果中保留官方地址、实际下载地址和下载来源。桌面端结果的
 唯一键包含平台、架构和完整构建版本，因为 Linux x64 与 arm64 可能共享版本号但使用不同
 SubID。
 

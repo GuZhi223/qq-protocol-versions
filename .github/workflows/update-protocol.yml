@@ -56,7 +56,7 @@ jobs:
       - name: Commit new protocol data
         shell: pwsh
         run: |
-          git add android_phone android_pad sources desktop scripts/extract-qqnt-subid.py scripts/update-qqnt-desktop.py
+          git add -A
           if (git diff --cached --quiet) {
             Write-Host "No new QQ version was discovered."
             exit 0
