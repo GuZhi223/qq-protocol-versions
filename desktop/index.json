@@ -78,6 +78,26 @@
       "download_source": "mirror"
     },
     {
+      "platform": "macos",
+      "architectures": [
+        "arm64",
+        "x64"
+      ],
+      "version": "7.0.0-52194",
+      "subid": 537379435,
+      "qua": "V1_MAC_NQ_7.0.0_52194_GW_B",
+      "qqappid_occurrences": 6,
+      "qua_occurrences": 2,
+      "major_sha256": "30c9ded92a71d71bf3810f10b8d12aa28baa79e76f4747853dab721a208cea3a",
+      "source_sha256": "b195c26df362af58954c898ab1dd984784a2ba6f57a629e6fb9b3ecc3bf9e65c",
+      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_7.0.0_260812_01.dmg",
+      "architecture": "universal",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/837fcb63/QQ_7.0.2_260924_01.dmg",
+      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_7.0.0_260812_01.dmg",
+      "download_source": "mirror"
+    },
+    {
       "platform": "windows",
       "architectures": [
         "arm64"
