@@ -7,7 +7,6 @@ from the same directory and only needs 7z on PATH for EXE/DMG packages.
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import hashlib
 import importlib.util
 import json
@@ -183,10 +182,6 @@ def rebuild_index(output_dir: Path) -> None:
         output_dir / "index.json",
         {
             "schema_version": 1,
-            "generated_at": dt.datetime.now(dt.timezone.utc)
-            .replace(microsecond=0)
-            .isoformat()
-            .replace("+00:00", "Z"),
             "entries": entries,
         },
     )
