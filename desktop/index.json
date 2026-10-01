@@ -8,6 +8,7 @@
       ],
       "version": "3.2.31-51102",
       "subid": 537376500,
+      "subid_source": "QQAppId/",
       "qua": "V1_LNX_NQ_3.2.31_51102_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -18,7 +19,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.33/release/3f89efc5/QQ_3.2.32_260812_mips64el_01.deb",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.31_260710_mips64el_01.deb",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_3.2.31_260710_mips64el_01.deb"
     },
     {
       "platform": "linux",
@@ -27,6 +29,7 @@
       ],
       "version": "3.2.32-52194",
       "subid": 537379448,
+      "subid_source": "QQAppId/",
       "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -37,7 +40,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_arm64_01.deb",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_arm64_01.deb",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_3.2.32_260812_arm64_01.deb"
     },
     {
       "platform": "linux",
@@ -46,6 +50,7 @@
       ],
       "version": "3.2.32-52194",
       "subid": 537379449,
+      "subid_source": "QQAppId/",
       "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -56,7 +61,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_loongarch64_01.deb",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_loongarch64_01.deb",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_3.2.32_260812_loongarch64_01.deb"
     },
     {
       "platform": "linux",
@@ -65,6 +71,7 @@
       ],
       "version": "3.2.32-52194",
       "subid": 537379447,
+      "subid_source": "QQAppId/",
       "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -75,7 +82,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_amd64_01.deb",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_amd64_01.deb",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_3.2.32_260812_amd64_01.deb"
     },
     {
       "platform": "macos",
@@ -85,6 +93,7 @@
       ],
       "version": "7.0.0-52194",
       "subid": 537379435,
+      "subid_source": "QQAppId/",
       "qua": "V1_MAC_NQ_7.0.0_52194_GW_B",
       "qqappid_occurrences": 6,
       "qua_occurrences": 2,
@@ -95,7 +104,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/837fcb63/QQ_7.0.2_260924_01.dmg",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_7.0.0_260812_01.dmg",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_7.0.0_260812_01.dmg"
     },
     {
       "platform": "windows",
@@ -104,6 +114,7 @@
       ],
       "version": "9.9.33-52230",
       "subid": 537379423,
+      "subid_source": "QQAppId/",
       "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -114,7 +125,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_arm64_01.exe",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_arm64_01.exe",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_9.9.33_260813_arm64_01.exe"
     },
     {
       "platform": "windows",
@@ -123,6 +135,7 @@
       ],
       "version": "9.9.33-52230",
       "subid": 537379411,
+      "subid_source": "QQAppId/",
       "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -133,7 +146,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_x64_01.exe",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x64_01.exe",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_9.9.33_260813_x64_01.exe"
     },
     {
       "platform": "windows",
@@ -142,6 +156,7 @@
       ],
       "version": "9.9.33-52230",
       "subid": 537379410,
+      "subid_source": "QQAppId/",
       "qua": "V1_WIN_NQ_9.9.33_52230_GW_B",
       "qqappid_occurrences": 3,
       "qua_occurrences": 1,
@@ -152,7 +167,8 @@
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_x86_01.exe",
       "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x86_01.exe",
-      "download_source": "mirror"
+      "download_source": "mirror",
+      "source_asset_name": "QQ_9.9.33_260813_x86_01.exe"
     }
   ]
 }
