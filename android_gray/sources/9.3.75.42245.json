@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "discovered_at": "2026-10-11T09:28:22.1048306Z",
+  "discovery": {
+    "provider": "Public QQ update feed; Tencent signature verified",
+    "endpoint": "https://t.me/s/qq_updatelog",
+    "announcement_url": "https://t.me/qq_updatelog/729"
+  },
+  "apk": {
+    "package_name": "com.tencent.mobileqq",
+    "version_name": "9.3.75",
+    "version_code": 16538,
+    "url": "https://downv6.qq.com/qqweb/QQ_1/android_apk/81b812d249592ccf674ce186883e0744.apk",
+    "size_byte": 393149091,
+    "sha256": "c570d7eee777c8d5ad4497d177f5c59d2c28db33e9588e6ee32dcc9bd9aaaab7",
+    "sha1": "0debbdcb3659abbca9267a7844d8e4a16682bf3d",
+    "md5": "9b2d3ff187e4c86fcb16fefbcfa3a79c",
+    "signer_certificate_sha256": "ea6e97ad6c34f7039a9c6daba732c97d0e098e83ede2b4d52c76eb0184ac7a38"
+  },
+  "extractor": {
+    "name": "MrXiaoM/Eden",
+    "version": "1.0.8",
+    "release_url": "https://github.com/MrXiaoM/Eden/releases/download/1.0.8/Eden-1.0.8.zip",
+    "release_sha256": "88a6851a07464db99ce725178e6802b1eb2dbb9acfd0c58ae1c8d8a891b47160"
+  },
+  "outputs": {
+    "android_phone_sha256": "c46b0f1a9ec65945a367a6f9cb6daed6270ba8ea0bc09a900ca3f509b031dd1f",
+    "android_pad_sha256": "8fab4bb90ba81203e48ceaa92934ddaad0904bf7797e526f9abd363f286033f4"
+  },
+  "channel": "gray",
+  "full_version": "9.3.75.42245",
+  "manifest_channel": "GrayOne"
+}
