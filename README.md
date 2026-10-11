@@ -8,6 +8,10 @@
 - `android_phone/<版本>.json`
 - `android_pad/<版本>.json`
 - `sources/<版本>.json` — 发现地址、APK 哈希、签名信息与 Eden 版本
+- `android_gray/android_phone/<完整版本>.json`、`android_gray/android_pad/<完整版本>.json`
+  — 独立保存的 Android 灰度协议数据，不覆盖正式版目录
+- `android_gray/sources/<完整版本>.json` — 公告地址、腾讯 APK 地址、实际哈希、签名与灰度标记
+- `android_gray/index.json` — 已验证灰度版本索引与最高完整版本
 - `desktop/<平台>/<版本>-<架构>.json` — QQNT Windows/Linux/macOS 包中
   `resources/app/package.json` 与 `major.node` 提取出的版本、架构、SubID 和 QUA
 - `desktop/index.json` — 当前仓库中全部桌面端条目的索引
@@ -32,7 +36,27 @@ GitHub Actions 工作流每天运行一次，也可以手动触发。
 时桌面端检查仍继续。桌面端会尝试全部平台与架构，失败时任务显示失败，并提交其他目标
 已成功校验的结果；没有变化时不创建提交。
 
-Android 流程在调用 Eden 之前会依次校验：
+Android 灰度通道也每日执行，失败不会阻止正式版和桌面端继续检查。它从
+[QQ/TIM Update Log 公开频道](https://t.me/s/qq_updatelog) 最新页面读取带 `Beta`/灰度标记、
+完整四段版本号和腾讯 APK 链接的公告。此频道**不是腾讯官方元数据接口**，只提供发现线索：
+脚本仅下载 `downv6.qq.com/qqweb/QQ_1/android_apk/` 下的 HTTPS 直链，拒绝下载重定向，
+并使用已验证正式版的腾讯 QQ 签名证书 SHA-256 作为信任锚。包名、清单构建号、Phone/Pad
+的 `Gray*` 标记、Eden 完整版本与两个 SubID 必须全部一致才会写入灰度目录。
+灰度 JSON 在记录输出哈希前统一为 UTF-8、LF 换行，与仓库的 `.gitattributes` 规则一致，
+保证首次生成、Git 提交和下次检出后的文件字节哈希一致。
+
+每次最多尝试两个高于仓库当前版本的新候选；同一灰度构建不会被不同 APK 静默覆盖。
+公告可能滞后、频道可能不可访问，也不包含所有受邀用户的灰度包，因此不保证覆盖腾讯
+全部灰度发布。发现源不可用会明确报错，不会冒充“没有更新”。
+手动触发时选择 `android-gray` 可只验证灰度流程；默认 `all` 仍检查所有平台与两个 Android 通道。
+
+只查询灰度候选、不下载、不修改数据：
+
+```powershell
+python scripts/update-android-gray.py --check-only
+```
+
+Android 正式版流程在调用 Eden 之前会依次校验：
 
 1. 腾讯元数据确认该包是官方 `com.tencent.mobileqq`。
 2. 下载得到的体积与 SHA-256 与腾讯元数据一致。
@@ -40,7 +64,7 @@ Android 流程在调用 Eden 之前会依次校验：
 4. 签名证书 SHA-256 与腾讯元数据一致。
 5. Eden 产出合法的 Phone（`protocol_type = 1`）与 Pad（`protocol_type = 6`）JSON。
 
-任何一项不通过都会中止 Android 提取，因此只有五项全部通过才会提交该版本的 Android 数据。
+任何一项不通过都会中止正式版 Android 提取，因此只有五项全部通过才会提交该版本的正式版数据。
 
 ## 运行环境
 

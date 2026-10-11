@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "channel": "gray",
+  "latest_version": "9.3.75.42245",
+  "entries": [
+    {
+      "version": "9.3.75.42245",
+      "version_code": 16538,
+      "manifest_channel": "GrayOne",
+      "phone_subid": 537397314,
+      "pad_subid": 537397325,
+      "phone_path": "android_gray/android_phone/9.3.75.42245.json",
+      "pad_path": "android_gray/android_pad/9.3.75.42245.json",
+      "source_path": "android_gray/sources/9.3.75.42245.json"
+    }
+  ]
+}

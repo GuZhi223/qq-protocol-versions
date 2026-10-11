@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: "23 3 * * *"
   workflow_dispatch:
+    inputs:
+      target:
+        description: Update scope
+        type: choice
+        options:
+          - all
+          - android-gray
+        default: all
 
 permissions:
   contents: write
@@ -45,12 +53,26 @@ jobs:
             $sevenZip | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
 
+      - name: Validate updater regression tests
+        id: validate
+        shell: pwsh
+        run: |
+          python -B -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { throw "Updater regression tests failed." }
+          ./tests/test_android_validation.ps1
+
       - name: Discover, verify and extract
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.target != 'android-gray' }}
         shell: pwsh
         run: ./scripts/update-protocol.ps1
 
+      - name: Discover, verify and extract public Android gray builds
+        if: ${{ !cancelled() && steps.validate.conclusion == 'success' }}
+        shell: pwsh
+        run: python scripts/update-android-gray.py
+
       - name: Discover and extract QQNT desktop packages
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.validate.conclusion == 'success' && (github.event_name != 'workflow_dispatch' || inputs.target != 'android-gray') }}
         shell: pwsh
         run: python scripts/update-qqnt-desktop.py --strict
         env:
@@ -61,7 +83,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          git add android_phone android_pad sources desktop
+          git add android_phone android_pad sources desktop android_gray
           if ($LASTEXITCODE -ne 0) { throw "Unable to stage protocol data." }
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 0) {
@@ -74,7 +96,7 @@ jobs:
           $changedRecords = @(git diff --cached --name-only --diff-filter=AM)
           if ($LASTEXITCODE -ne 0) { throw "Unable to list updated protocol records." }
           $versions = @($changedRecords |
-            Where-Object { $_ -match '^(android_phone|android_pad|sources)/[^/]+\.json$|^desktop/(windows|linux|macos)/[^/]+\.json$' } |
+            Where-Object { $_ -match '^(android_phone|android_pad|sources)/[^/]+\.json$|^desktop/(windows|linux|macos)/[^/]+\.json$|^android_gray/(android_phone|android_pad|sources)/[^/]+\.json$' } |
             ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) } |
             Sort-Object -Unique)
           $message = "Update QQ protocol data"
