@@ -8,6 +8,9 @@
 - `android_phone/<版本>.json`
 - `android_pad/<版本>.json`
 - `sources/<版本>.json` — 发现地址、APK 哈希、签名信息与 Eden 版本
+- `desktop/<平台>/<版本>-<架构>.json` — QQNT Windows/Linux/macOS 包中
+  `resources/app/package.json` 与 `major.node` 提取出的版本、架构、SubID 和 QUA
+- `desktop/index.json` — 当前仓库中全部桌面端条目的索引
 
 QQ APK 只会被下载到 runner 的临时工作区，本仓库从不提交、也从不发布它。
 
@@ -22,7 +25,14 @@ QQ APK 只会被下载到 runner 的临时工作区，本仓库从不提交、�
 
 ## 自动化
 
-GitHub Actions 工作流每天运行一次，也可以手动触发。它在调用 Eden 之前会依次校验：
+GitHub Actions 工作流每天运行一次，也可以手动触发。
+
+每日任务在默认分支 `main` 执行，计划时间为北京时间 11:23（UTC 03:23），实际启动可能
+受 GitHub 调度延迟影响。Android、Windows、Linux、macOS 均由此任务检查；Android 失败
+时桌面端检查仍继续。桌面端会尝试全部平台与架构，失败时任务显示失败，并提交其他目标
+已成功校验的结果；没有变化时不创建提交。
+
+Android 流程在调用 Eden 之前会依次校验：
 
 1. 腾讯元数据确认该包是官方 `com.tencent.mobileqq`。
 2. 下载得到的体积与 SHA-256 与腾讯元数据一致。
@@ -30,7 +40,7 @@ GitHub Actions 工作流每天运行一次，也可以手动触发。它在调�
 4. 签名证书 SHA-256 与腾讯元数据一致。
 5. Eden 产出合法的 Phone（`protocol_type = 1`）与 Pad（`protocol_type = 6`）JSON。
 
-任何一项不通过都会中止运行，因此只有五项全部通过才会产生提交。
+任何一项不通过都会中止 Android 提取，因此只有五项全部通过才会提交该版本的 Android 数据。
 
 ## 运行环境
 
@@ -49,6 +59,26 @@ GitHub Actions 工作流每天运行一次，也可以手动触发。它在调�
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\update-protocol.ps1
 ```
+
+桌面端由同一个工作流自动更新。工作流从腾讯
+[PC 配置](https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json)
+读取 Windows、Linux 和 macOS 下载地址，在临时目录解包，只保留 JSON 结果；Windows
+安装器和 macOS DMG 使用 7-Zip，Linux DEB 使用 Python 标准库解析。若腾讯 CDN 对 runner
+返回 403 或包内容无法解包，脚本会依次尝试 [NapCatQQ Release](https://github.com/NapNeko/NapCatQQ/releases)
+中的腾讯安装包链接，再回退到带 SHA-256 校验的
+[Rodert/qq-versions 镜像](https://github.com/Rodert/qq-versions)。NapCat Release
+中的链接只接受腾讯域名，并且必须精确匹配平台和架构。结果会保留官方地址、实际下载地址、
+下载来源以及 NapCat Release 标签，便于追溯。
+
+`major.node` 中的 SubID 提取兼容 NapCat 的两种格式：新版的
+`QQAppId/<数字>\0` 标记，以及旧版的
+`A4 09 00 00 00 35` 二进制标记。脚本仍会校验 `package.json`、QUA、架构和重复候选值；
+发现冲突时不会提交该条目。桌面端结果的唯一键包含平台、架构和完整构建版本，因为 Linux
+x64 与 arm64 可能共享版本号但使用不同 SubID。
+
+工作流把 GitHub Actions 自带的 `GITHUB_TOKEN` 传给桌面端脚本，用于读取镜像发布元数据，
+避免匿名 GitHub API 的低频率限制。本地运行时不需要令牌；如果遇到 GitHub API 限流，
+可以设置 `GITHUB_TOKEN` 或 `GH_TOKEN` 后再运行脚本。
 
 ## 许可与归属
 

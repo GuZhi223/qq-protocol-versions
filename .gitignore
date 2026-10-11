@@ -1,4 +1,6 @@
 .work/
 *.apk
 *.zip
+__pycache__/
+*.py[cod]
 

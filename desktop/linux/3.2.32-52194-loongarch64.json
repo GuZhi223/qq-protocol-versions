@@ -1,0 +1,21 @@
+{
+  "platform": "linux",
+  "architectures": [
+    "loongarch64"
+  ],
+  "version": "3.2.32-52194",
+  "subid": 537379449,
+  "subid_source": "QQAppId/",
+  "qua": "V1_LNX_NQ_3.2.32_52194_GW_B",
+  "qqappid_occurrences": 3,
+  "qua_occurrences": 1,
+  "major_sha256": "69a9c01bf70d6ae07a3d81ea97ee0df12fec7447473b16a0c2cd080048d9216f",
+  "source_sha256": "400553f6d646da4e523b22ba652334f08f74b377c465392dda65c2e6c9f908fd",
+  "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_loongarch64_01.deb",
+  "architecture": "loongarch64",
+  "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+  "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_loongarch64_01.deb",
+  "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_3.2.32_260812_loongarch64_01.deb",
+  "download_source": "mirror",
+  "source_asset_name": "QQ_3.2.32_260812_loongarch64_01.deb"
+}
