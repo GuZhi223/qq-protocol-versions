@@ -71,16 +71,17 @@ jobs:
           if ($LASTEXITCODE -ne 1) { throw "Unable to compare protocol data." }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          $version = (Get-ChildItem desktop -Recurse -Filter *.json -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ne "index.json" } |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1).BaseName
-          if (-not $version) {
-            $version = (Get-ChildItem sources -Filter *.json |
-              Sort-Object LastWriteTime -Descending |
-              Select-Object -First 1).BaseName
+          $changedRecords = @(git diff --cached --name-only --diff-filter=AM)
+          if ($LASTEXITCODE -ne 0) { throw "Unable to list updated protocol records." }
+          $versions = @($changedRecords |
+            Where-Object { $_ -match '^(android_phone|android_pad|sources)/[^/]+\.json$|^desktop/(windows|linux|macos)/[^/]+\.json$' } |
+            ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) } |
+            Sort-Object -Unique)
+          $message = "Update QQ protocol data"
+          if ($versions.Count -gt 0) {
+            $message += " for " + ($versions -join ", ")
           }
-          git commit -m "Update QQ protocol data for $version"
+          git commit -m $message
           if ($LASTEXITCODE -ne 0) { throw "Unable to commit protocol data." }
           git push
           if ($LASTEXITCODE -ne 0) { throw "Unable to publish protocol data." }
