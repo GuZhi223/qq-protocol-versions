@@ -180,7 +180,28 @@ def write_json(path: Path, value: dict) -> None:
 
 
 def rebuild_index(root: Path) -> None:
-    rows = [row for row, source in verified_records(root)]
+    records = verified_records(root)
+    # Temporary consumer compatibility: numeric full-build filenames coexist
+    # with stable short-version filenames. Never overwrite the stable record.
+    # TODO(gray-channel-model): unify channel/build identities with the module;
+    # these exact gray labels must not become an inferred official baseline.
+    exports: list[tuple[Path, dict]] = []
+    for row, source in records:
+        for directory, path_key in (("android_phone", "phone_path"), ("android_pad", "pad_path")):
+            protocol = dict(read_json(root / row[path_key]))
+            protocol.update(channel="gray", manifest_channel=row["manifest_channel"],
+                            source_path=row["source_path"])
+            destination = root / directory / f"{row['version']}.json"
+            if destination.exists():
+                existing = read_json(destination)
+                if (existing.get("channel") != "gray"
+                    or existing.get("sort_version_name") != row["version"]
+                    or existing.get("sub_app_id") != protocol["sub_app_id"]):
+                    raise RuntimeError(f"Gray compatibility export would replace another record: {destination}")
+            exports.append((destination, protocol))
+    for destination, protocol in exports:
+        write_json(destination, protocol)
+    rows = [row for row, source in records]
     write_json(root / "android_gray" / "index.json", {
         "schema_version": 1,
         "channel": "gray",

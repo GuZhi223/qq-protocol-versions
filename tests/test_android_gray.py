@@ -78,10 +78,32 @@ class AndroidGrayTests(unittest.TestCase):
             index = json.loads(index_before)
             self.assertEqual(index["latest_version"], "9.3.75.42245")
             self.assertEqual(index["entries"][0]["phone_subid"], 537397314)
+            phone_export = root / "android_phone" / "9.3.75.42245.json"
+            pad_export = root / "android_pad" / "9.3.75.42245.json"
+            phone = updater.read_json(phone_export)
+            pad = updater.read_json(pad_export)
+            self.assertEqual(phone["channel"], "gray")
+            self.assertEqual(phone["manifest_channel"], "GrayOne")
+            self.assertEqual(phone["sort_version_name"], "9.3.75.42245")
+            self.assertEqual(pad["sub_app_id"], 537397325)
+            self.assertEqual(phone["source_path"], "android_gray/sources/9.3.75.42245.json")
+            export_before = (phone_export.read_bytes(), pad_export.read_bytes())
             self.assertEqual(updater.select_pending(updater.parse_candidates(message()), root), [])
             updater.rebuild_index(root)
             self.assertEqual(index_path.read_bytes(), index_before)
             self.assertEqual(stable_path.read_bytes(), stable_before)
+            self.assertEqual((phone_export.read_bytes(), pad_export.read_bytes()), export_before)
+
+    def test_compatibility_export_never_overwrites_a_non_gray_record(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.create_record(root)
+            path = root / "android_phone" / "9.3.75.42245.json"
+            updater.write_json(path, {"sort_version_name": "9.3.75.42245", "sub_app_id": 537397314})
+            before = path.read_bytes()
+            with self.assertRaises(RuntimeError):
+                updater.rebuild_index(root)
+            self.assertEqual(path.read_bytes(), before)
 
     def test_modified_output_cannot_be_treated_as_verified(self):
         with tempfile.TemporaryDirectory() as temporary:
