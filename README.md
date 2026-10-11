@@ -25,7 +25,14 @@ QQ APK 只会被下载到 runner 的临时工作区，本仓库从不提交、�
 
 ## 自动化
 
-GitHub Actions 工作流每天运行一次，也可以手动触发。它在调用 Eden 之前会依次校验：
+GitHub Actions 工作流每天运行一次，也可以手动触发。
+
+每日任务在默认分支 `main` 执行，计划时间为北京时间 11:23（UTC 03:23），实际启动可能
+受 GitHub 调度延迟影响。Android、Windows、Linux、macOS 均由此任务检查；Android 失败
+时桌面端检查仍继续。桌面端会尝试全部平台与架构，失败时任务显示失败，并提交其他目标
+已成功校验的结果；没有变化时不创建提交。
+
+Android 流程在调用 Eden 之前会依次校验：
 
 1. 腾讯元数据确认该包是官方 `com.tencent.mobileqq`。
 2. 下载得到的体积与 SHA-256 与腾讯元数据一致。
@@ -33,7 +40,7 @@ GitHub Actions 工作流每天运行一次，也可以手动触发。它在调�
 4. 签名证书 SHA-256 与腾讯元数据一致。
 5. Eden 产出合法的 Phone（`protocol_type = 1`）与 Pad（`protocol_type = 6`）JSON。
 
-任何一项不通过都会中止运行，因此只有五项全部通过才会产生提交。
+任何一项不通过都会中止 Android 提取，因此只有五项全部通过才会提交该版本的 Android 数据。
 
 ## 运行环境
 

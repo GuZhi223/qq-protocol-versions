@@ -50,19 +50,25 @@ jobs:
         run: ./scripts/update-protocol.ps1
 
       - name: Discover and extract QQNT desktop packages
+        if: ${{ !cancelled() }}
         shell: pwsh
-        run: python scripts/update-qqnt-desktop.py
+        run: python scripts/update-qqnt-desktop.py --strict
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit new protocol data
+        if: ${{ !cancelled() }}
         shell: pwsh
         run: |
-          git add -A
-          if (git diff --cached --quiet) {
+          $ErrorActionPreference = 'Stop'
+          git add android_phone android_pad sources desktop
+          if ($LASTEXITCODE -ne 0) { throw "Unable to stage protocol data." }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
             Write-Host "No new QQ version was discovered."
             exit 0
           }
+          if ($LASTEXITCODE -ne 1) { throw "Unable to compare protocol data." }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           $version = (Get-ChildItem desktop -Recurse -Filter *.json -ErrorAction SilentlyContinue |
@@ -75,4 +81,6 @@ jobs:
               Select-Object -First 1).BaseName
           }
           git commit -m "Update QQ protocol data for $version"
+          if ($LASTEXITCODE -ne 0) { throw "Unable to commit protocol data." }
           git push
+          if ($LASTEXITCODE -ne 0) { throw "Unable to publish protocol data." }

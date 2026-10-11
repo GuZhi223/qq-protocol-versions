@@ -393,7 +393,17 @@ def main() -> int:
                                 f"SHA-256 mismatch: expected {expected_digest}, "
                                 f"got {actual_digest}"
                             )
-                    result = extract(package, source_url=candidate_url)
+                    candidate_result = extract(package, source_url=candidate_url)
+                    expected_architecture = "mips" if architecture == "mips64el" else architecture
+                    actual_architectures = set(candidate_result["architectures"])
+                    if candidate_result["platform"] != platform:
+                        raise RuntimeError("提取出的平台与下载目标不一致")
+                    if architecture == "universal":
+                        if actual_architectures != {"x64", "arm64"}:
+                            raise RuntimeError("macOS 安装包未同时包含 x64 与 arm64")
+                    elif actual_architectures != {expected_architecture}:
+                        raise RuntimeError("提取出的架构与下载目标不一致")
+                    result = candidate_result
                     selected_source = source
                     selected_url = candidate_url
                     selected_metadata = metadata
@@ -467,14 +477,16 @@ def main() -> int:
                 failures.append(f"{platform}/{architecture}: {error}")
                 print(f"[{platform}/{architecture}] FAILED: {error}", file=sys.stderr)
 
+    # Save the index for successfully extracted targets before strict mode
+    # reports failures, so the workflow can publish valid partial results.
+    if successes:
+        rebuild_index(args.output_dir)
     if failures:
         message = "；".join(failures)
         if args.strict:
             raise RuntimeError("桌面端更新未完成：" + message)
         print("desktop warnings: " + message, file=sys.stderr)
-    if successes:
-        rebuild_index(args.output_dir)
-    elif args.strict:
+    if not successes and args.strict:
         raise RuntimeError("没有成功提取任何桌面端安装包")
     return 0
 
