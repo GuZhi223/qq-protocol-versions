@@ -24,8 +24,8 @@
     "release_sha256": "88a6851a07464db99ce725178e6802b1eb2dbb9acfd0c58ae1c8d8a891b47160"
   },
   "outputs": {
-    "android_phone_sha256": "c46b0f1a9ec65945a367a6f9cb6daed6270ba8ea0bc09a900ca3f509b031dd1f",
-    "android_pad_sha256": "8fab4bb90ba81203e48ceaa92934ddaad0904bf7797e526f9abd363f286033f4"
+    "android_phone_sha256": "025dea0f45dfb48e0d20bbfb25d349b4a6e578157d0c9c90451df9b8d581ac70",
+    "android_pad_sha256": "d0a9ce7f3e64d6b669d039e19f506550eb2af31134820996538e46b64ba81075"
   },
   "channel": "gray",
   "full_version": "9.3.75.42245",

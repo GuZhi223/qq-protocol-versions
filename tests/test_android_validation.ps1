@@ -9,7 +9,7 @@ $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [r
 if ($parseErrors.Count -gt 0) { throw 'Android updater PowerShell syntax is invalid.' }
 $functions = $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
 foreach ($function in $functions) {
-    if ($function.Name -in @('Assert-GrayApkUrl', 'Get-ManifestMetadata', 'Get-BuildToolsSortKey')) {
+    if ($function.Name -in @('Assert-GrayApkUrl', 'Get-ManifestMetadata', 'Get-BuildToolsSortKey', 'Convert-ProtocolOutputToLf')) {
         Invoke-Expression $function.Extent.Text
     }
 }
@@ -65,3 +65,18 @@ if ((Get-BuildToolsSortKey '36.1.0') -le (Get-BuildToolsSortKey '9.0.0')) {
     throw 'Android build-tools versions must sort numerically.'
 }
 Write-Host 'Android gray URL and manifest validation tests: OK'
+
+$fixturePath = [IO.Path]::GetTempFileName()
+try {
+    [IO.File]::WriteAllText($fixturePath, "{`r`n  `"version`": `"9.3.75.42245`"`r`n}`r`n", [Text.UTF8Encoding]::new($true))
+    Convert-ProtocolOutputToLf $fixturePath
+    $bytes = [IO.File]::ReadAllBytes($fixturePath)
+    if (13 -in $bytes -or $bytes[0] -ne 123) { throw 'Gray outputs must be BOM-free UTF-8 with LF line endings.' }
+    $firstHash = (Get-FileHash -LiteralPath $fixturePath -Algorithm SHA256).Hash
+    Convert-ProtocolOutputToLf $fixturePath
+    if ((Get-FileHash -LiteralPath $fixturePath -Algorithm SHA256).Hash -ne $firstHash) {
+        throw 'LF normalization must be idempotent.'
+    }
+    Write-Host 'Gray output byte stability tests: OK'
+}
+finally { Remove-Item -LiteralPath $fixturePath -Force }

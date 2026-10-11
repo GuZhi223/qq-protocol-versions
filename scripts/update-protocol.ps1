@@ -27,6 +27,12 @@ function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function Convert-ProtocolOutputToLf([string]$Path) {
+    # Match the repository's LF policy before recording byte-level output hashes.
+    $content = [IO.File]::ReadAllText($Path).Replace("`r`n", "`n")
+    [IO.File]::WriteAllText($Path, $content, [Text.UTF8Encoding]::new($false))
+}
+
 function Get-BuildToolsSortKey([string]$Name) {
     # Sort key must order build-tools numerically. A plain string sort puts
     # '9.0.0' above '34.0.0', so each dotted component is padded to a fixed
@@ -342,6 +348,8 @@ try {
             [int64]$padJson.app_id -ne $padSubId -or [int64]$padJson.sub_app_id -ne $padSubId) {
             throw 'Eden SubIDs do not match signed manifest metadata.'
         }
+        Convert-ProtocolOutputToLf $phoneTemporary
+        Convert-ProtocolOutputToLf $padTemporary
     }
 
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $phoneDestination), `
