@@ -183,8 +183,6 @@ def rebuild_index(root: Path) -> None:
     records = verified_records(root)
     # Temporary consumer compatibility: numeric full-build filenames coexist
     # with stable short-version filenames. Never overwrite the stable record.
-    # TODO(gray-channel-model): unify channel/build identities with the module;
-    # these exact gray labels must not become an inferred official baseline.
     exports: list[tuple[Path, dict]] = []
     for row, source in records:
         for directory, path_key in (("android_phone", "phone_path"), ("android_pad", "pad_path")):
