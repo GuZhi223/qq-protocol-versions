@@ -7,9 +7,12 @@
 
 - `android_phone/<版本>.json`
 - `android_pad/<版本>.json`
+- `android_phone/<完整灰度版本>.json`、`android_pad/<完整灰度版本>.json`
+  — 临时兼容产出，与正式版放在相同目录；完整数字版本不变，额外明确标记
+  `channel: gray`、`manifest_channel: GrayOne` 和验证来源 `source_path`
 - `sources/<版本>.json` — 发现地址、APK 哈希、签名信息与 Eden 版本
 - `android_gray/android_phone/<完整版本>.json`、`android_gray/android_pad/<完整版本>.json`
-  — 独立保存的 Android 灰度协议数据，不覆盖正式版目录
+  — 保留原始 Eden 灰度协议数据，作为验签和输出哈希的核对依据
 - `android_gray/sources/<完整版本>.json` — 公告地址、腾讯 APK 地址、实际哈希、签名与灰度标记
 - `android_gray/index.json` — 已验证灰度版本索引与最高完整版本
 - `desktop/<平台>/<版本>-<架构>.json` — QQNT Windows/Linux/macOS 包中
@@ -44,6 +47,10 @@ Android 灰度通道也每日执行，失败不会阻止正式版和桌面端继
 的 `Gray*` 标记、Eden 完整版本与两个 SubID 必须全部一致才会写入灰度目录。
 灰度 JSON 在记录输出哈希前统一为 UTF-8、LF 换行，与仓库的 `.gitattributes` 规则一致，
 保证首次生成、Git 提交和下次检出后的文件字节哈希一致。
+随后自动向原 Android 目录生成带明确灰度标记的兼容副本；使用完整版本文件名，
+不覆盖正式版的短版本文件。模块需保留并显示该标记；旧模块能读取完整版本，
+但在同版本正式版尚未收录时，仍可能把灰度渠道误判成官版或商店渠道。
+后续完善事项见 [TODO.md](TODO.md)，这次不重做渠道推断。
 
 每次最多尝试两个高于仓库当前版本的新候选；同一灰度构建不会被不同 APK 静默覆盖。
 公告可能滞后、频道可能不可访问，也不包含所有受邀用户的灰度包，因此不保证覆盖腾讯
