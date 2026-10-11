@@ -1,0 +1,23 @@
+{
+  "platform": "linux",
+  "architectures": [
+    "x64"
+  ],
+  "version": "3.2.34-53644",
+  "subid": 537391664,
+  "subid_source": "QQAppId/",
+  "qua": "V1_LNX_NQ_3.2.34_53644_GW_B",
+  "qqappid_occurrences": 3,
+  "qua_occurrences": 1,
+  "major_sha256": "95c4694572bb3b9fe62ff40a25168fb10b5c6a815fdd260e581ae3d6d92e85f9",
+  "source_sha256": "436c65e1dd28422e128a21cbddb5fe4e2e6c079d7f27fec2541e014d38cc336e",
+  "source_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_amd64.deb",
+  "architecture": "x64",
+  "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+  "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_amd64_01.deb",
+  "download_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_amd64.deb",
+  "download_source": "napcat-release",
+  "source_release_label": "Linux amd64 DEB 3.2.34-53644（腾讯官方）",
+  "source_release_tag": "v4.18.34",
+  "source_release_url": "https://github.com/NapNeko/NapCatQQ/releases/tag/v4.18.34"
+}

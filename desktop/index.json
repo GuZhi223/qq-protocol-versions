@@ -86,6 +86,52 @@
       "source_asset_name": "QQ_3.2.32_260812_amd64_01.deb"
     },
     {
+      "platform": "linux",
+      "architectures": [
+        "arm64"
+      ],
+      "version": "3.2.34-53644",
+      "subid": 537391665,
+      "subid_source": "QQAppId/",
+      "qua": "V1_LNX_NQ_3.2.34_53644_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "faaf321436fa0a33b11816d4282f7a8a82155e357888d7b4f3d052fb7eef6dbb",
+      "source_sha256": "181b895cb573548e396e54bb0548cca92ffdc1b1a4b018fa4551bb062385fdca",
+      "source_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_arm64.deb",
+      "architecture": "arm64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_arm64_01.deb",
+      "download_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_arm64.deb",
+      "download_source": "napcat-release",
+      "source_release_label": "Linux arm64 DEB 3.2.34-53644（腾讯官方）",
+      "source_release_tag": "v4.18.34",
+      "source_release_url": "https://github.com/NapNeko/NapCatQQ/releases/tag/v4.18.34"
+    },
+    {
+      "platform": "linux",
+      "architectures": [
+        "x64"
+      ],
+      "version": "3.2.34-53644",
+      "subid": 537391664,
+      "subid_source": "QQAppId/",
+      "qua": "V1_LNX_NQ_3.2.34_53644_GW_B",
+      "qqappid_occurrences": 3,
+      "qua_occurrences": 1,
+      "major_sha256": "95c4694572bb3b9fe62ff40a25168fb10b5c6a815fdd260e581ae3d6d92e85f9",
+      "source_sha256": "436c65e1dd28422e128a21cbddb5fe4e2e6c079d7f27fec2541e014d38cc336e",
+      "source_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_amd64.deb",
+      "architecture": "x64",
+      "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
+      "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/9ee04bef/QQ_3.2.34_260924_amd64_01.deb",
+      "download_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.36/beta/9ee04bef/linuxqq_3.2.34-53644_amd64.deb",
+      "download_source": "napcat-release",
+      "source_release_label": "Linux amd64 DEB 3.2.34-53644（腾讯官方）",
+      "source_release_tag": "v4.18.34",
+      "source_release_url": "https://github.com/NapNeko/NapCatQQ/releases/tag/v4.18.34"
+    },
+    {
       "platform": "macos",
       "architectures": [
         "arm64",
@@ -141,13 +187,15 @@
       "qua_occurrences": 1,
       "major_sha256": "3fdc17fa0512fd4b702f34a0025ffe4eca0a5c70229872f7fc0a0324bdfb5fdf",
       "source_sha256": "b25c0d3ce9df764074a9118d0ded927e1b2d7ebf60e306112e8df18a040ec492",
-      "source_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x64_01.exe",
+      "source_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.33/release/497e2f1f/QQ_9.9.33_260813_x64_01.exe",
       "architecture": "x64",
       "config_url": "https://cdn-go.cn/qq-web/im.qq.com_new/latest/rainbow/pcConfig.json",
       "official_url": "https://qqdl.gtimg.cn/qqfile/QQNTV2/9.9.36/release/e8e54bbb/QQ_9.9.36_260924_x64_01.exe",
-      "download_url": "https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4/QQ_9.9.33_260813_x64_01.exe",
-      "download_source": "mirror",
-      "source_asset_name": "QQ_9.9.33_260813_x64_01.exe"
+      "download_url": "https://qqdl.gtimg.cn/qqfile/QQNT/9.9.33/release/497e2f1f/QQ_9.9.33_260813_x64_01.exe",
+      "download_source": "napcat-release",
+      "source_release_label": "9.9.33-52230 X64 Win（官方 CDN）",
+      "source_release_tag": "v4.18.33",
+      "source_release_url": "https://github.com/NapNeko/NapCatQQ/releases/tag/v4.18.33"
     },
     {
       "platform": "windows",
