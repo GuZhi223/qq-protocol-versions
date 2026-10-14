@@ -3,6 +3,8 @@ name: Update QQ protocol data
 on:
   schedule:
     - cron: "23 3 * * *"
+    - cron: "23 15 * * *"
+
   workflow_dispatch:
     inputs:
       target:
