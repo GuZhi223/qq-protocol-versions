@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "channel": "gray",
-  "latest_version": "9.3.85.43095",
+  "latest_version": "9.3.90.43520",
   "entries": [
     {
       "version": "9.3.75.42245",
@@ -32,6 +32,16 @@
       "phone_path": "android_gray/android_phone/9.3.85.43095.json",
       "pad_path": "android_gray/android_pad/9.3.85.43095.json",
       "source_path": "android_gray/sources/9.3.85.43095.json"
+    },
+    {
+      "version": "9.3.90.43520",
+      "version_code": 17048,
+      "manifest_channel": "GrayOne",
+      "phone_subid": 537406685,
+      "pad_subid": 537406696,
+      "phone_path": "android_gray/android_phone/9.3.90.43520.json",
+      "pad_path": "android_gray/android_pad/9.3.90.43520.json",
+      "source_path": "android_gray/sources/9.3.90.43520.json"
     }
   ]
 }
