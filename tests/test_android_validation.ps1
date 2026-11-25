@@ -170,3 +170,6 @@ if ($nativeResult.ExitCode -eq 0 -or $nativeResult.StatusCode -ne 0 -or -not $na
     throw 'Native errors must return a failure result without terminating the helper.'
 }
 Write-Host 'Native curl error capture tests: OK'
+# GitHub's pwsh wrapper propagates the last native exit code. The deliberate
+# failure above is an asserted success, not a failed validation script.
+$global:LASTEXITCODE = 0
