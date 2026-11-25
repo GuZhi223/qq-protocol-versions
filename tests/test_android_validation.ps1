@@ -162,3 +162,11 @@ finally { Remove-Item -LiteralPath $fixturePath -Force }
     }
 }
 Write-Host 'Android package retry, timeout, and cleanup tests: OK'
+
+# Real curl, but no network: HTTPS-only policy rejects this URL before I/O.
+# In Windows PowerShell 5 stderr must be captured, not escape the retry helper.
+$nativeResult = Invoke-PackageDownloadAttempt -Uri 'http://example.invalid/qq.apk' -OutFile 'unused-protocol-test.apk'
+if ($nativeResult.ExitCode -eq 0 -or $nativeResult.StatusCode -ne 0 -or -not $nativeResult.Message) {
+    throw 'Native errors must return a failure result without terminating the helper.'
+}
+Write-Host 'Native curl error capture tests: OK'

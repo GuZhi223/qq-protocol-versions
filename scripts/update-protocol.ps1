@@ -44,6 +44,9 @@ function Invoke-PackageDownloadAttempt {
     # Handle native exit codes ourselves even when the caller enables PS 7's
     # native-command error preference. Never disable TLS verification.
     $PSNativeCommandUseErrorActionPreference = $false
+    # Windows PowerShell 5 turns redirected stderr into error records; keep
+    # those inside this result instead of terminating before retry handling.
+    $ErrorActionPreference = 'Continue'
     $output = (& $curl.Source @arguments 2>&1 | ForEach-Object { $_.ToString() }) -join "`n"
     $exitCode = $LASTEXITCODE
     $status = 0
