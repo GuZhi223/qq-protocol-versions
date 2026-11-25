@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -272,29 +273,56 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def download_resumable(url: str, destination: Path, retries: int = 4) -> None:
-    """Download with retries and a byte-range resume when the server supports it."""
+def download_resumable(url: str, destination: Path, retries: int = 2) -> None:
+    """Bound connection/transfer time, preserving curl's checked Range resume."""
+    if retries < 1:
+        raise ValueError("retries must be at least 1")
+    curl = shutil.which("curl.exe") or shutil.which("curl")
+    if not curl:
+        raise RuntimeError("安装包下载需要 PATH 中存在 curl")
     for attempt in range(1, retries + 1):
         offset = destination.stat().st_size if destination.exists() else 0
-        headers = {"User-Agent": USER_AGENT, "Referer": DEFAULT_HOME_URL}
+        command = [
+            curl, "--silent", "--show-error", "--fail", "--location",
+            "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "10",
+            "--connect-timeout", "30", "--max-time", "600",
+            "--speed-limit", "1024", "--speed-time", "60",
+            "--user-agent", USER_AGENT, "--referer", DEFAULT_HOME_URL,
+            "--output", str(destination), "--write-out", "%{http_code}",
+            "--url", url,
+        ]
         if offset:
-            headers["Range"] = f"bytes={offset}-"
-        request = urllib.request.Request(url, headers=headers)
+            command.extend(["--continue-at", str(offset)])
+        print(f"download attempt {attempt}/{retries} (connect 30s, total 600s)", flush=True)
+        retryable = False
         try:
-            with urllib.request.urlopen(request, timeout=120) as response:
-                if offset and getattr(response, "status", 200) == 200:
-                    # The server ignored Range; restarting avoids duplicate bytes.
-                    destination.unlink(missing_ok=True)
-                    offset = 0
-                mode = "ab" if offset else "wb"
-                with destination.open(mode) as output:
-                    shutil.copyfileobj(response, output, length=1024 * 1024)
-            if destination.stat().st_size > 0:
+            completed = subprocess.run(
+                command, capture_output=True, text=True, timeout=615, check=False,
+            )
+            status = int(completed.stdout.strip() or "0")
+            valid_status = status == 206 if offset else status == 200
+            if (completed.returncode == 0 and valid_status
+                    and destination.exists() and destination.stat().st_size > 0):
                 return
-        except (OSError, urllib.error.URLError, urllib.error.HTTPError) as error:
-            if attempt == retries:
-                raise RuntimeError(f"下载失败：{url}：{error}") from error
-            time.sleep(attempt * 3)
+            error = f"curl {completed.returncode}, HTTP {status}: {completed.stderr.strip()}"
+            if offset and completed.returncode == 33 and status == 200:
+                # curl rejects a server ignoring Range instead of appending a
+                # complete response. Remove the partial file before restarting.
+                destination.unlink(missing_ok=True)
+                retryable = True
+            else:
+                retryable = status in {408, 429, 500, 502, 503, 504} or (
+                    status in {0, 200, 206}
+                    and completed.returncode in {5, 6, 7, 18, 28, 52, 55, 56}
+                )
+        except subprocess.TimeoutExpired:
+            error = "下载进程超过 615 秒上限"
+            retryable = True
+        if not retryable or attempt == retries:
+            destination.unlink(missing_ok=True)
+            raise RuntimeError(f"下载失败：{url}：{error}")
+        print(f"download interrupted: {error}; retrying", file=sys.stderr)
+        time.sleep(attempt * 3)
 
 
 def safe_name(value: str) -> str:

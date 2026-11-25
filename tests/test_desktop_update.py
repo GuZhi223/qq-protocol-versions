@@ -4,6 +4,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -15,6 +16,151 @@ SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "update-qqnt-desktop.
 SPEC = importlib.util.spec_from_file_location("desktop_updater", SCRIPT)
 updater = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(updater)
+
+
+class DesktopDownloadTests(unittest.TestCase):
+    def completed(self, code=0, status=200):
+        return subprocess.CompletedProcess([], code, str(status), "test error" if code else "")
+
+    def test_timeouts_and_https_policy(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.exe"
+
+            def download(command, **kwargs):
+                path.write_bytes(b"package")
+                self.assertEqual(kwargs["timeout"], 615)
+                for flag, value in (
+                    ("--connect-timeout", "30"), ("--max-time", "600"),
+                    ("--proto", "=https"), ("--proto-redir", "=https"),
+                ):
+                    self.assertEqual(command[command.index(flag) + 1], value)
+                self.assertNotIn("--insecure", command)
+                return self.completed()
+
+            with patch.object(updater.shutil, "which", return_value="curl"), patch.object(
+                updater.subprocess, "run", side_effect=download
+            ):
+                updater.download_resumable("https://example.test/package.exe", path)
+            self.assertEqual(path.read_bytes(), b"package")
+
+    def test_interrupted_download_resumes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.exe"
+            calls = []
+
+            def download(command, **kwargs):
+                calls.append(command)
+                if len(calls) == 1:
+                    path.write_bytes(b"part")
+                    return self.completed(18, 200)
+                self.assertEqual(command[command.index("--continue-at") + 1], "4")
+                with path.open("ab") as stream:
+                    stream.write(b"rest")
+                return self.completed(0, 206)
+
+            with (
+                patch.object(updater.shutil, "which", return_value="curl"),
+                patch.object(updater.subprocess, "run", side_effect=download),
+                patch.object(updater.time, "sleep") as sleep,
+            ):
+                updater.download_resumable("https://example.test/package.exe", path)
+                sleep.assert_called_once_with(3)
+            self.assertEqual(path.read_bytes(), b"partrest")
+
+    def test_ignored_range_restarts_without_duplicate_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.exe"
+            path.write_bytes(b"partial")
+            calls = []
+
+            def download(command, **kwargs):
+                calls.append(command)
+                if len(calls) == 1:
+                    self.assertIn("--continue-at", command)
+                    return self.completed(33, 200)
+                self.assertNotIn("--continue-at", command)
+                self.assertFalse(path.exists())
+                path.write_bytes(b"complete-package")
+                return self.completed()
+
+            with (
+                patch.object(updater.shutil, "which", return_value="curl"),
+                patch.object(updater.subprocess, "run", side_effect=download),
+                patch.object(updater.time, "sleep"),
+            ):
+                updater.download_resumable("https://example.test/package.exe", path)
+            self.assertEqual(path.read_bytes(), b"complete-package")
+
+    def test_permanent_errors_and_unexpected_status_fail_fast(self):
+        for code, status in ((22, 403), (22, 404), (60, 0), (0, 206)):
+            with self.subTest(code=code, status=status), tempfile.TemporaryDirectory() as temporary:
+                path = Path(temporary) / "package.exe"
+
+                def download(*args, **kwargs):
+                    path.write_bytes(b"partial")
+                    return self.completed(code, status)
+
+                with (
+                    patch.object(updater.shutil, "which", return_value="curl"),
+                    patch.object(updater.subprocess, "run", side_effect=download) as run,
+                    patch.object(updater.time, "sleep") as sleep,
+                ):
+                    with self.assertRaises(RuntimeError):
+                        updater.download_resumable("https://example.test/package.exe", path)
+                    self.assertEqual(run.call_count, 1)
+                    sleep.assert_not_called()
+                self.assertFalse(path.exists())
+
+    def test_transient_http_failure_retries(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.exe"
+            results = iter((self.completed(22, 503), self.completed()))
+
+            def download(*args, **kwargs):
+                result = next(results)
+                if result.returncode == 0:
+                    path.write_bytes(b"package")
+                return result
+
+            with (
+                patch.object(updater.shutil, "which", return_value="curl"),
+                patch.object(updater.subprocess, "run", side_effect=download) as run,
+                patch.object(updater.time, "sleep"),
+            ):
+                updater.download_resumable("https://example.test/package.exe", path)
+                self.assertEqual(run.call_count, 2)
+
+    def test_retry_exhaustion_removes_partial_file(self):
+        for result in (self.completed(28, 200), subprocess.TimeoutExpired("curl", 615)):
+            with self.subTest(result=result), tempfile.TemporaryDirectory() as temporary:
+                path = Path(temporary) / "package.exe"
+
+                def download(*args, **kwargs):
+                    path.write_bytes(b"partial")
+                    if isinstance(result, Exception):
+                        raise result
+                    return result
+
+                with (
+                    patch.object(updater.shutil, "which", return_value="curl"),
+                    patch.object(updater.subprocess, "run", side_effect=download) as run,
+                    patch.object(updater.time, "sleep") as sleep,
+                ):
+                    with self.assertRaises(RuntimeError):
+                        updater.download_resumable("https://example.test/package.exe", path)
+                    self.assertEqual(run.call_count, 2)
+                    sleep.assert_called_once_with(3)
+                self.assertFalse(path.exists())
+
+    def test_empty_success_is_not_a_package(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.exe"
+            with (
+                patch.object(updater.shutil, "which", return_value="curl"),
+                patch.object(updater.subprocess, "run", return_value=self.completed()),
+            ):
+                with self.assertRaises(RuntimeError):
+                    updater.download_resumable("https://example.test/package.exe", path)
 
 
 class DesktopUpdateTests(unittest.TestCase):

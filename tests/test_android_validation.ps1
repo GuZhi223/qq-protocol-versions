@@ -9,7 +9,7 @@ $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [r
 if ($parseErrors.Count -gt 0) { throw 'Android updater PowerShell syntax is invalid.' }
 $functions = $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)
 foreach ($function in $functions) {
-    if ($function.Name -in @('Assert-GrayApkUrl', 'Get-ManifestMetadata', 'Get-BuildToolsSortKey', 'Convert-ProtocolOutputToLf')) {
+    if ($function.Name -in @('Assert-GrayApkUrl', 'Get-ManifestMetadata', 'Get-BuildToolsSortKey', 'Convert-ProtocolOutputToLf', 'Save-PackageWithRetry', 'Invoke-PackageDownloadAttempt')) {
         Invoke-Expression $function.Extent.Text
     }
 }
@@ -80,3 +80,85 @@ try {
     Write-Host 'Gray output byte stability tests: OK'
 }
 finally { Remove-Item -LiteralPath $fixturePath -Force }
+
+# Exercise retry/cleanup without making network requests or actually sleeping.
+& {
+    $downloadPath = Join-Path ([IO.Path]::GetTempPath()) ("qq-download-test-{0}" -f [guid]::NewGuid().ToString('N'))
+    $script:downloadCalls = 0
+    $script:sleepCalls = 0
+    $script:testResults = @()
+    function Start-Sleep { param([int]$Seconds) $script:sleepCalls++ }
+    function Invoke-PackageDownloadAttempt {
+        param([string]$Uri, [string]$OutFile, [switch]$NoRedirect)
+        if (Test-Path -LiteralPath $OutFile) { throw 'A retry retained a partial download.' }
+        $result = $script:testResults[$script:downloadCalls]
+        $script:downloadCalls++
+        $script:noRedirectReceived = [bool]$NoRedirect
+        [IO.File]::WriteAllText($OutFile, 'test-package')
+        return $result
+    }
+    try {
+        $script:testResults = @(
+            [pscustomobject]@{ ExitCode = 28; StatusCode = 0; Message = 'connection timeout' }
+            [pscustomobject]@{ ExitCode = 0; StatusCode = 200; Message = '' }
+        )
+        Save-PackageWithRetry -Uri 'https://example.test/qq.apk' -OutFile $downloadPath -NoRedirect
+        if ($script:downloadCalls -ne 2 -or $script:sleepCalls -ne 1 -or -not $script:noRedirectReceived) {
+            throw 'Transient downloads must retry and preserve the no-redirect policy.'
+        }
+
+        $script:downloadCalls = 0
+        $script:sleepCalls = 0
+        $script:testResults = @(1..3 | ForEach-Object {
+            [pscustomobject]@{ ExitCode = 28; StatusCode = 200; Message = 'partial transfer timeout' }
+        })
+        Assert-Throws { Save-PackageWithRetry -Uri 'https://example.test/qq.apk' -OutFile $downloadPath }
+        if ($script:downloadCalls -ne 3 -or $script:sleepCalls -ne 2 -or (Test-Path -LiteralPath $downloadPath)) {
+            throw 'Exhausted retries must fail and remove the incomplete package.'
+        }
+
+        foreach ($case in @(@(22, 403), @(22, 404), @(47, 302), @(60, 0), @(0, 206))) {
+            $script:downloadCalls = 0
+            $script:sleepCalls = 0
+            $script:testResults = @([pscustomobject]@{ ExitCode = $case[0]; StatusCode = $case[1]; Message = 'rejected' })
+            Assert-Throws { Save-PackageWithRetry -Uri 'https://example.test/qq.apk' -OutFile $downloadPath }
+            if ($script:downloadCalls -ne 1 -or $script:sleepCalls -ne 0 -or (Test-Path -LiteralPath $downloadPath)) {
+                throw 'Permanent HTTP, redirect, certificate, and unexpected partial-response errors must fail immediately.'
+            }
+        }
+        $script:downloadCalls = 0
+        $script:sleepCalls = 0
+        $script:testResults = @(
+            [pscustomobject]@{ ExitCode = 22; StatusCode = 503; Message = 'unavailable' }
+            [pscustomobject]@{ ExitCode = 0; StatusCode = 200; Message = '' }
+        )
+        Save-PackageWithRetry -Uri 'https://example.test/qq.apk' -OutFile $downloadPath
+        if ($script:downloadCalls -ne 2) { throw 'Temporary HTTP errors must retry.' }
+    }
+    finally { Remove-Item -LiteralPath $downloadPath -Force -ErrorAction SilentlyContinue }
+}
+
+# Inspect the actual native adapter arguments through a fake executable.
+& {
+    function Get-Command { return [pscustomobject]@{ Source = 'Invoke-TestCurl' } }
+    function Invoke-TestCurl {
+        $script:curlArguments = @($args)
+        $global:LASTEXITCODE = 0
+        "`n200"
+    }
+    $result = Invoke-PackageDownloadAttempt -Uri 'https://example.test/qq.apk' -OutFile 'test.apk' -NoRedirect
+    $options = $script:curlArguments
+    if ($result.ExitCode -ne 0 -or $result.StatusCode -ne 200 -or
+        $options[[array]::IndexOf($options, '--connect-timeout') + 1] -ne '30' -or
+        $options[[array]::IndexOf($options, '--max-time') + 1] -ne '600' -or
+        $options[[array]::IndexOf($options, '--max-redirs') + 1] -ne '0' -or
+        $options[[array]::IndexOf($options, '--proto-redir') + 1] -ne '=https' -or
+        '--insecure' -in $options) {
+        throw 'Native download timeouts, HTTPS, or gray redirect restrictions were not preserved.'
+    }
+    Invoke-PackageDownloadAttempt -Uri 'https://example.test/qq.apk' -OutFile 'test.apk' | Out-Null
+    if ($script:curlArguments[[array]::IndexOf($script:curlArguments, '--max-redirs') + 1] -ne '10') {
+        throw 'Ordinary package downloads must retain bounded HTTPS redirects.'
+    }
+}
+Write-Host 'Android package retry, timeout, and cleanup tests: OK'

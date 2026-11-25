@@ -27,6 +27,64 @@ function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+function Invoke-PackageDownloadAttempt {
+    param([string]$Uri, [string]$OutFile, [switch]$NoRedirect)
+
+    $curl = Get-Command curl.exe, curl -CommandType Application -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($null -eq $curl) { throw 'Package downloads require curl on PATH.' }
+    $arguments = @(
+        '--silent', '--show-error', '--fail', '--location',
+        '--proto', '=https', '--proto-redir', '=https',
+        '--connect-timeout', '30', '--max-time', '600',
+        '--speed-limit', '1024', '--speed-time', '60',
+        '--max-redirs', $(if ($NoRedirect) { '0' } else { '10' }),
+        '--output', $OutFile, '--write-out', '\n%{http_code}', '--url', $Uri
+    )
+    # Handle native exit codes ourselves even when the caller enables PS 7's
+    # native-command error preference. Never disable TLS verification.
+    $PSNativeCommandUseErrorActionPreference = $false
+    $output = (& $curl.Source @arguments 2>&1 | ForEach-Object { $_.ToString() }) -join "`n"
+    $exitCode = $LASTEXITCODE
+    $status = 0
+    if ($output -match '(?s)^(.*)\n(\d{3})\s*$') {
+        $output = $Matches[1].Trim()
+        $status = [int]$Matches[2]
+    }
+    return [pscustomobject]@{ ExitCode = $exitCode; StatusCode = $status; Message = $output }
+}
+
+function Save-PackageWithRetry {
+    param(
+        [string]$Uri,
+        [string]$OutFile,
+        [ValidateRange(1, 5)][int]$MaxAttempts = 3,
+        [switch]$NoRedirect
+    )
+
+    # Each retry starts a fresh temporary download. A failed/partial package
+    # must never be mistaken for a completed APK or Eden archive.
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        Remove-Item -LiteralPath $OutFile -Force -ErrorAction SilentlyContinue
+        Write-Host "Download attempt $attempt/$MaxAttempts (connect 30s, total 600s): $Uri"
+        $result = Invoke-PackageDownloadAttempt -Uri $Uri -OutFile $OutFile -NoRedirect:$NoRedirect
+        if ($result.ExitCode -eq 0 -and $result.StatusCode -eq 200 -and
+            (Test-Path -LiteralPath $OutFile -PathType Leaf) -and
+            (Get-Item -LiteralPath $OutFile).Length -gt 0) {
+            return
+        }
+        Remove-Item -LiteralPath $OutFile -Force -ErrorAction SilentlyContinue
+        # Retry only temporary HTTP failures and transport interruptions.
+        # Redirect refusals, 403/404, and TLS certificate errors fail closed.
+        $retryable = $result.StatusCode -in @(408, 429, 500, 502, 503, 504) -or
+            ($result.StatusCode -in @(0, 200) -and $result.ExitCode -in @(5, 6, 7, 18, 28, 52, 55, 56))
+        $message = "Package download failed (attempt $attempt/$MaxAttempts, curl $($result.ExitCode), HTTP $($result.StatusCode)): $($result.Message)"
+        if (-not $retryable -or $attempt -eq $MaxAttempts) { throw $message }
+        Write-Warning "$message; retrying."
+        Start-Sleep -Seconds ($attempt * 3)
+    }
+}
+
 function Convert-ProtocolOutputToLf([string]$Path) {
     # Match the repository's LF policy before recording byte-level output hashes.
     $content = [IO.File]::ReadAllText($Path).Replace("`r`n", "`n")
@@ -215,10 +273,10 @@ try {
     }
     elseif ($Channel -eq 'gray') {
         # Do not follow an announcement's redirect to an unapproved host.
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $apkPath -MaximumRedirection 0 -TimeoutSec 300
+        Save-PackageWithRetry -Uri $downloadUrl -OutFile $apkPath -NoRedirect
     }
     else {
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $apkPath
+        Save-PackageWithRetry -Uri $downloadUrl -OutFile $apkPath
     }
 
     $actualSize = (Get-Item -LiteralPath $apkPath).Length
@@ -298,7 +356,7 @@ try {
 
     Write-Host "Downloading and verifying Eden $edenVersion..."
     if ($EdenArchive) { Copy-Item -LiteralPath $EdenArchive -Destination $edenZip }
-    else { Invoke-WebRequest -Uri $edenReleaseUrl -OutFile $edenZip }
+    else { Save-PackageWithRetry -Uri $edenReleaseUrl -OutFile $edenZip }
     $actualEdenSha256 = Get-Sha256 $edenZip
     if ($actualEdenSha256 -ne $edenReleaseSha256) {
         throw "Eden SHA-256 mismatch: expected $edenReleaseSha256, got $actualEdenSha256."
