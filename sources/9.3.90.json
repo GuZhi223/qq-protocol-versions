@@ -22,8 +22,22 @@
     "release_url": "https://github.com/MrXiaoM/Eden/releases/download/1.0.8/Eden-1.0.8.zip",
     "release_sha256": "88a6851a07464db99ce725178e6802b1eb2dbb9acfd0c58ae1c8d8a891b47160"
   },
+  "android_manifest": {
+    "full_version": "9.3.90.43625",
+    "phone": {
+      "subid": 537407148,
+      "channel_id": "2002",
+      "channel": "YingYongBao"
+    },
+    "pad": {
+      "subid": 537407187,
+      "channel_id": "2002",
+      "channel": "YingYongBao"
+    }
+  },
+  "android_manifest_verified_at": "2026-11-26T06:35:20.3439644+00:00",
   "outputs": {
-    "android_phone_sha256": "9ea0ad02395896fa348d16f66245b66146263bb0b3f1944028ba1e2c1ff77213",
-    "android_pad_sha256": "9fc4316e31721a2d2f27e5bc6c0e23f67e76f1091dcf86a4b2d873fb8dca6ef2"
+    "android_phone_sha256": "5bdba83ef1b5662e61ce14c742d90d93c6b286dca513bc29944fa86a324db6fe",
+    "android_pad_sha256": "f1040b8750bb46619573794271a6bfa445512bd6851813f4600b3b46c4a285db"
   }
 }
